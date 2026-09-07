@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GO-learning · 學習報告</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink: #14212b; --muted: #5a6b78; --paper: #f3efe6; --paper-2: #ebe4d6;
+  --panel: rgba(255,252,247,0.86); --line: rgba(20,33,43,0.10);
+  --teal: #0f766e; --teal-deep: #0a4f4a; --sand: #c4a574;
+  --code-bg: #1b2833; --code-fg: #e7eef3;
+  --shadow: 0 18px 50px rgba(20,33,43,0.10); --radius: 18px; --nav-w: 280px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; color: var(--ink); font-family: "Noto Sans TC", sans-serif;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(15,118,110,0.18), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(196,165,116,0.22), transparent 50%),
+    radial-gradient(800px 500px at 50% 100%, rgba(125,184,176,0.12), transparent 45%),
+    linear-gradient(165deg, #eef3f1 0%, var(--paper) 45%, var(--paper-2) 100%);
+  min-height: 100vh; line-height: 1.75;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+.shell { position: relative; z-index: 1; display: grid; grid-template-columns: var(--nav-w) 1fr; min-height: 100vh; }
+.sidebar {
+  position: sticky; top: 0; height: 100vh; overflow: auto; padding: 28px 18px 40px;
+  border-right: 1px solid var(--line); background: rgba(243,239,230,0.72); backdrop-filter: blur(14px);
+}
+.brand { padding: 8px 12px 22px; animation: rise 0.7s ease both; }
+.brand-kicker { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); font-weight: 700; }
+.brand h1 { font-family: "Noto Serif TC", serif; font-size: 28px; line-height: 1.25; margin: 8px 0 6px; }
+.brand p { margin: 0; color: var(--muted); font-size: 13px; }
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav-link {
+  display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: start;
+  text-decoration: none; color: var(--ink); padding: 10px 10px; border-radius: 12px;
+  transition: background .2s, transform .2s;
+}
+.nav-link:hover { background: rgba(15,118,110,0.08); transform: translateX(2px); }
+.nav-link.active { background: rgba(15,118,110,0.14); }
+.nav-num {
+  width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center;
+  background: var(--ink); color: #fff; font-size: 12px; font-weight: 700;
+}
+.nav-label { font-size: 13px; line-height: 1.35; padding-top: 4px; }
+.main { padding: 0 0 80px; }
+.hero { padding: 56px 48px 36px; animation: rise 0.8s ease both; }
+.hero-panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 28px;
+  box-shadow: var(--shadow); padding: 36px 36px 28px; overflow: hidden; position: relative;
+}
+.hero-panel::after {
+  content: ""; position: absolute; right: -40px; top: -40px; width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(15,118,110,0.18), transparent 70%);
+  animation: pulse 5s ease-in-out infinite;
+}
+.hero h2 { font-family: "Noto Serif TC", serif; font-size: clamp(32px, 4vw, 48px); margin: 0 0 12px; letter-spacing: -0.02em; }
+.hero .lede { font-size: 17px; color: var(--muted); max-width: 52ch; margin-bottom: 28px; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+.chip {
+  border: 1px solid var(--line); background: rgba(255,255,255,0.7);
+  padding: 8px 12px; border-radius: 999px; font-size: 13px; color: var(--muted);
+}
+.chip strong { color: var(--ink); }
+.progress { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; position: relative; padding-top: 8px; }
+.progress::before {
+  content: ""; position: absolute; left: 8%; right: 8%; top: 22px; height: 2px;
+  background: linear-gradient(90deg, var(--teal), var(--sand)); opacity: 0.45;
+}
+.stage { text-align: center; position: relative; animation: rise .6s ease both; animation-delay: calc(var(--i) * 0.06s); }
+.stage-dot {
+  width: 14px; height: 14px; border-radius: 50%; margin: 0 auto 10px;
+  background: var(--teal); box-shadow: 0 0 0 6px rgba(15,118,110,0.12);
+}
+.stage-name { font-size: 13px; font-weight: 700; }
+.stage-file { font-size: 11px; color: var(--muted); font-family: "JetBrains Mono", monospace; }
+.content { padding: 8px 48px 0; display: flex; flex-direction: column; gap: 22px; }
+.chapter {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(20,33,43,0.05); animation: rise .55s ease both;
+}
+.chapter-inner { padding: 28px 30px 32px; }
+.chapter h2 {
+  font-family: "Noto Serif TC", serif; font-size: 28px; margin: 0 0 18px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--line);
+}
+.chapter h3 { font-size: 18px; margin: 26px 0 10px; color: var(--teal-deep); }
+.chapter h4 { font-size: 15px; margin: 18px 0 8px; }
+.chapter p { margin: 0 0 12px; }
+.chapter ul, .chapter ol { margin: 0 0 14px; padding-left: 1.25em; }
+.chapter li { margin: 4px 0; }
+blockquote {
+  margin: 14px 0; padding: 12px 16px; border-left: 3px solid var(--teal);
+  background: rgba(15,118,110,0.06); border-radius: 0 12px 12px 0; color: var(--muted);
+}
+code { font-family: "JetBrains Mono", monospace; font-size: 0.9em; background: rgba(20,33,43,0.06); padding: 0.1em 0.35em; border-radius: 6px; }
+pre.code {
+  background: var(--code-bg); color: var(--code-fg); border-radius: 14px; padding: 16px 18px;
+  overflow: auto; margin: 14px 0 18px; position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+}
+pre.code code { background: none; padding: 0; color: inherit; font-size: 13px; line-height: 1.6; }
+pre.code::before {
+  content: attr(data-lang); position: absolute; top: 8px; right: 12px; font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: rgba(231,238,243,0.45);
+  font-family: "JetBrains Mono", monospace;
+}
+.table-wrap { overflow: auto; margin: 14px 0 18px; border-radius: 14px; border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; background: rgba(255,255,255,0.55); }
+th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: rgba(15,118,110,0.08); font-weight: 700; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+.quiz-answer {
+  margin: 12px 0 8px; border: 1px dashed rgba(15,118,110,0.35); border-radius: 14px;
+  padding: 4px 14px 10px; background: rgba(15,118,110,0.04);
+}
+.quiz-answer summary { cursor: pointer; font-weight: 700; color: var(--teal-deep); padding: 10px 0; list-style: none; }
+.quiz-answer summary::-webkit-details-marker { display: none; }
+.quiz-answer summary::before { content: "▸ "; }
+.quiz-answer[open] summary::before { content: "▾ "; }
+.answer-body { color: var(--muted); }
+.answer-list { margin: 0; padding-left: 1.2em; }
+.sep { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
+.footnote-bar {
+  margin: 28px 48px 0; padding: 18px 22px; border-radius: 16px;
+  background: rgba(20,33,43,0.92); color: #e8eef2;
+  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.footnote-bar strong { color: #9fd0c9; }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 0%,100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.08); opacity: 1; } }
+@media (max-width: 980px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+  .nav { display: grid; grid-template-columns: 1fr 1fr; }
+  .hero, .content { padding-left: 18px; padding-right: 18px; }
+  .progress { grid-template-columns: repeat(2, 1fr); }
+  .progress::before { display: none; }
+  .footnote-bar { margin: 24px 18px 0; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-kicker">GO-learning</div>
+      <h1>學習報告</h1>
+      <p>給人閱讀的視覺版<br/>Markdown 手冊另存一份給 AI</p>
+    </div>
+    <nav class="nav" id="toc"><a class="nav-link" href="#section-使用說明" data-num="·"><span class="nav-num">·</span><span class="nav-label">使用說明</span></a><a class="nav-link" href="#section-1" data-num="1"><span class="nav-num">1</span><span class="nav-label">學習地圖與檔案對照</span></a><a class="nav-link" href="#section-2" data-num="2"><span class="nav-num">2</span><span class="nav-label">程式骨架：package / import / main</span></a><a class="nav-link" href="#section-3" data-num="3"><span class="nav-num">3</span><span class="nav-label">變數宣告</span></a><a class="nav-link" href="#section-4" data-num="4"><span class="nav-num">4</span><span class="nav-label">區塊式 var 與多重宣告</span></a><a class="nav-link" href="#section-5" data-num="5"><span class="nav-num">5</span><span class="nav-label">常數 const</span></a><a class="nav-link" href="#section-6" data-num="6"><span class="nav-num">6</span><span class="nav-label">fmt 輸出與格式動詞</span></a><a class="nav-link" href="#section-7" data-num="7"><span class="nav-num">7</span><span class="nav-label">基本型別</span></a><a class="nav-link" href="#section-8" data-num="8"><span class="nav-num">8</span><span class="nav-label">bool 的四種宣告</span></a><a class="nav-link" href="#section-9" data-num="9"><span class="nav-num">9</span><span class="nav-label">uint 與型別格式</span></a><a class="nav-link" href="#section-10" data-num="10"><span class="nav-num">10</span><span class="nav-label">陣列 Array（基礎）</span></a><a class="nav-link" href="#section-11" data-num="11"><span class="nav-num">11</span><span class="nav-label">陣列初始化細節與 len</span></a><a class="nav-link" href="#section-12" data-num="12"><span class="nav-num">12</span><span class="nav-label">Slice 基礎（J.go）</span></a><a class="nav-link" href="#section-13" data-num="13"><span class="nav-num">13</span><span class="nav-label">append / 再切片 / copy（K.go）</span></a><a class="nav-link" href="#section-14" data-num="14"><span class="nav-num">14</span><span class="nav-label">運算與 if / else（L.go）</span></a><a class="nav-link" href="#section-15" data-num="15"><span class="nav-num">15</span><span class="nav-label">switch（M.go）</span></a><a class="nav-link" href="#section-16" data-num="16"><span class="nav-num">16</span><span class="nav-label">for / continue / range（N.go）</span></a><a class="nav-link" href="#section-17" data-num="17"><span class="nav-num">17</span><span class="nav-label">總複習對照表</span></a><a class="nav-link" href="#section-18" data-num="18"><span class="nav-num">18</span><span class="nav-label">修訂紀錄</span></a><a class="nav-link" href="#section-更新約定-給未來的我們" data-num="·"><span class="nav-num">·</span><span class="nav-label">更新約定（給未來的我們）</span></a></nav>
+  </aside>
+  <div class="main">
+    <header class="hero">
+      <div class="hero-panel">
+        <div class="brand-kicker">惟理的 Go 進度報告</div>
+        <h2>從第一堂複習到 N.go</h2>
+        <p class="lede">這份報告與 <code>學習手冊.md</code> 內容對齊，但排版是為人類閱讀設計：左側可跳章、上方看進度、程式碼與表格清楚分開，自測答案點開才顯示。</p>
+        <div class="meta-row">
+          <div class="chip"><strong>20</strong> 章可讀內容</div>
+          <div class="chip"><strong>hello → N</strong> 練習檔對照</div>
+          <div class="chip"><strong>雙檔制</strong> Markdown + 本報告同步更新</div>
+        </div>
+        <div class="progress"><div class="stage" style="--i:0"><div class="stage-dot"></div><div class="stage-name">入門</div><div class="stage-file">hello.go</div></div><div class="stage" style="--i:1"><div class="stage-dot"></div><div class="stage-name">變數常數</div><div class="stage-file">A–C</div></div><div class="stage" style="--i:2"><div class="stage-dot"></div><div class="stage-name">輸出型別</div><div class="stage-file">D–G</div></div><div class="stage" style="--i:3"><div class="stage-dot"></div><div class="stage-name">陣列</div><div class="stage-file">H–I</div></div><div class="stage" style="--i:4"><div class="stage-dot"></div><div class="stage-name">Slice</div><div class="stage-file">J–K</div></div><div class="stage" style="--i:5"><div class="stage-dot"></div><div class="stage-name">條件分支</div><div class="stage-file">L–M</div></div><div class="stage" style="--i:6"><div class="stage-dot"></div><div class="stage-name">迴圈</div><div class="stage-file">N</div></div></div>
+      </div>
+    </header>
+    <div class="content">
+      <section class="chapter" id="intro"><div class="chapter-inner"><h2>關於這份報告</h2><blockquote>本手冊整理自「惟理」的 Go 學習過程：從第一次複習教學，到後來新增的 <code>J.go</code>～<code>N.go</code>。  <br/><strong>寫作原則：</strong> 跟課堂講解一樣清楚，不刻意省略、不為了短而簡化。  <br/><strong>更新約定：</strong> 之後每次學完新內容，都會把新章節補進這份手冊。</blockquote>
+<hr class="sep"/><p>完整教學正文從下方各章開始；內容與 Markdown 手冊相同，僅呈現格式不同。</p></div></section>
+      <section class="chapter" id="section-使用說明" data-num=""><div class="chapter-inner"><h2>使用說明</h2>
+<ol><li>1. 建議對照 repo 裡的練習檔案一起看（<code>hello.go</code>、<code>A.go</code>～<code>N.go</code>）。</li><li>2. 每一章末尾有「自測」——先自己答，再對答案。</li><li>3. 章節順序就是你實際學過的順序；不必跳章。</li><li>4. 之後若新增章節，會在「修訂紀錄」與目錄一起更新。</li></ol>
+<hr class="sep"/></div></section><section class="chapter" id="toc-md"><div class="chapter-inner"><h2>目錄</h2>
+<ol><li>1. <a href="#1-學習地圖與檔案對照">學習地圖與檔案對照</a></li><li>2. <a href="#2-程式骨架package--import--main">程式骨架：package / import / main</a></li><li>3. <a href="#3-變數宣告">變數宣告</a></li><li>4. <a href="#4-區塊式-var-與多重宣告">區塊式 var 與多重宣告</a></li><li>5. <a href="#5-常數-const">常數 const</a></li><li>6. <a href="#6-fmt-輸出與格式動詞">fmt 輸出與格式動詞</a></li><li>7. <a href="#7-基本型別">基本型別</a></li><li>8. <a href="#8-bool-的四種宣告">bool 的四種宣告</a></li><li>9. <a href="#9-uint-與型別格式">uint 與型別格式</a></li><li>10. <a href="#10-陣列-array基礎">陣列 Array（基礎）</a></li><li>11. <a href="#11-陣列初始化細節與-len">陣列初始化細節與 len</a></li><li>12. <a href="#12-slice-基礎jgo">Slice 基礎（J.go）</a></li><li>13. <a href="#13-append--再切片--copykgo">append / 再切片 / copy（K.go）</a></li><li>14. <a href="#14-運算與-if--elselgo">運算與 if / else（L.go）</a></li><li>15. <a href="#15-switchmgo">switch（M.go）</a></li><li>16. <a href="#16-for--continue--rangenego">for / continue / range（N.go）</a></li><li>17. <a href="#17-總複習對照表">總複習對照表</a></li><li>18. <a href="#18-修訂紀錄">修訂紀錄</a></li></ol>
+<hr class="sep"/></div></section><section class="chapter" id="section-1" data-num="1"><div class="chapter-inner"><h2>1. 學習地圖與檔案對照</h2>
+<h3>1.1 你學過的內容（依時間）</h3>
+<div class="table-wrap"><table><thead><tr><th>階段</th><th>內容</th><th>對應檔案</th></tr></thead><tbody><tr><td>入門</td><td>第一個程式、外部套件</td><td><code>hello.go</code></td></tr><tr><td>變數與常數</td><td><code>var</code>、<code>:=</code>、區塊宣告、<code>const</code></td><td><code>A.go</code> <code>B.go</code> <code>C.go</code></td></tr><tr><td>輸出與型別</td><td><code>fmt</code>、基本型別、<code>bool</code>、<code>uint</code></td><td><code>D.go</code> <code>E.go</code> <code>F.go</code> <code>G.go</code></td></tr><tr><td>陣列</td><td>宣告、索引、初始化、<code>len</code></td><td><code>H.go</code> <code>i.go</code></td></tr><tr><td>Slice</td><td><code>len</code>/<code>cap</code>、從陣列切片、<code>make</code></td><td><code>J.go</code></td></tr><tr><td>Slice 進階</td><td><code>append</code>、再切片、<code>copy</code></td><td><code>K.go</code></td></tr><tr><td>條件</td><td><code>+=</code>、<code>if</code> / <code>else</code> / <code>else if</code>、巢狀 if</td><td><code>L.go</code></td></tr><tr><td>分支</td><td><code>switch</code>、多值 case、<code>default</code></td><td><code>M.go</code></td></tr><tr><td>迴圈</td><td>三段式 <code>for</code>、<code>continue</code>、巢狀、<code>range</code></td><td><code>N.go</code></td></tr></tbody></table></div>
+<h3>1.2 怎麼跑單一檔案</h3>
+<p>因為很多檔案都是 <code>package main</code> + <code>func main()</code>，<strong>不要</strong>在專案根目錄一次 <code>go run .</code>（會衝突）。</p>
+<p>請這樣跑：</p>
+<pre class="code" data-lang="bash"><code>go run hello.go
+go run A.go
+go run J.go
+# 依此類推</code></pre>
+<blockquote>註：同一個資料夾裡若同時有多個 <code>func main</code>，<code>go run .</code> 會失敗。這是練習筆記型 repo 的常見狀況，之後若要做成正式專案，再拆成每個資料夾一個 <code>main</code>。</blockquote>
+<hr class="sep"/></div></section><section class="chapter" id="section-2" data-num="2"><div class="chapter-inner"><h2>2. 程式骨架：package / import / main</h2>
+<p>對應：<code>hello.go</code></p>
+<h3>2.1 最小可執行結構</h3>
+<pre class="code" data-lang="go"><code>package main
+
+import (
+	&quot;fmt&quot;
+
+	&quot;rsc.io/quote&quot;
+)
+
+func main() {
+	fmt.Println(quote.Go())
+}</code></pre>
+<p>每一段的意義：</p>
+<div class="table-wrap"><table><thead><tr><th>部分</th><th>作用</th></tr></thead><tbody><tr><td><code>package main</code></td><td>宣告這個檔案屬於 <code>main</code> 套件。要做成可執行程式，套件名必須是 <code>main</code>。</td></tr><tr><td><code>import (...)</code></td><td>引入要用的套件。標準庫如 <code>fmt</code>；外部套件如 <code>rsc.io/quote</code>（寫在 <code>go.mod</code>）。</td></tr><tr><td><code>func main()</code></td><td>程式入口。程式從這裡開始跑。一個可執行程式只能有一個 <code>main</code>。</td></tr></tbody></table></div>
+<h3>2.2 必須記住的規則</h3>
+<ol><li>1. <strong>可執行程式 = <code>package main</code> + <code>func main()</code></strong>  </li></ol>
+<p>   少一個就不是一般意義上的「可直接 <code>go run</code> 的小程式」。</p>
+<ol><li>2. <strong>同一目錄多個 <code>func main()</code> 會衝突</strong>  </li></ol>
+<p>   你早期的 <code>H.go</code>、<code>i.go</code> 曾在同一個檔案裡貼多段 <code>package main</code> + <code>func main()</code>，那適合作筆記，但不適合作為單一可編譯單元。</p>
+<ol><li>3. <strong>匯出規則（大小寫）</strong>  </li></ol>
+<p>   別的套件能用的名字，第一個字母要<strong>大寫</strong>。      例如 <code>quote.Go()</code> 的 <code>G</code> 是大寫，所以外部套件才能呼叫。      若寫成小寫 <code>quote.go</code>，在套件外會無法使用。</p>
+<ol><li>4. <strong><code>go.mod</code> 在做什麼</strong>  </li></ol>
+<p>   它記錄模組名稱與依賴版本。你專案裡有：</p>
+<p>   ``<code>text    module example.com/m    go 1.26.6    require rsc.io/quote v1.5.2    </code>``</p>
+<p>   沒有 <code>go.mod</code> 時，外部套件依賴會不好管理。</p>
+<h3>2.3 自測</h3>
+<ol><li>1. 可執行 Go 程式的套件名必須是什麼？  </li><li>2. <code>quote.Go</code> 為什麼能被外面用到？  </li><li>3. 為什麼不建議在根目錄對這個 repo 直接 <code>go run .</code>？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. <code>main</code></li><li>2. 名稱以大寫開頭，屬於匯出符號</li><li>3. 多個檔案都有 <code>func main()</code>，會衝突</li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-3" data-num="3"><div class="chapter-inner"><h2>3. 變數宣告</h2>
+<p>對應：<code>A.go</code></p>
+<h3>3.1 三種主要寫法</h3>
+<pre class="code" data-lang="go"><code>var A int     // 方式一：先宣告型別
+A = 20        // 再賦值
+
+var B = &quot;apple&quot; // 方式二：有初始值，可省略寫型別（編譯器推斷）
+
+C := 0.2        // 方式三：短宣告（宣告 + 賦值一次完成）</code></pre>
+<h3>3.2 對照表（務必背）</h3>
+<div class="table-wrap"><table><thead><tr><th>寫法</th><th>可否在函式外</th><th>可否型別推斷</th><th>典型用途</th></tr></thead><tbody><tr><td><code>var x int</code></td><td>✅</td><td>需寫型別，或之後給值</td><td>要明確零值、或套件層級變數</td></tr><tr><td><code>var x = 1</code></td><td>✅</td><td>✅</td><td>清楚、正式</td></tr><tr><td><code>x := 1</code></td><td>❌ 只能在函式內</td><td>✅</td><td>日常最快寫法</td></tr></tbody></table></div>
+<h3>3.3 零值（沒給初始值時）</h3>
+<p>Go 的變數宣告後一定有值，不會是「未定義垃圾值」。</p>
+<div class="table-wrap"><table><thead><tr><th>型別</th><th>零值</th></tr></thead><tbody><tr><td><code>int</code> 等數字</td><td><code>0</code></td></tr><tr><td><code>float32</code> / <code>float64</code></td><td><code>0</code></td></tr><tr><td><code>bool</code></td><td><code>false</code></td></tr><tr><td><code>string</code></td><td><code>&amp;quot;&amp;quot;</code>（空字串，不是 <code>nil</code>）</td></tr></tbody></table></div>
+<h3>3.4 <code>:=</code> 與 <code>=</code> 的差別</h3>
+<pre class="code" data-lang="go"><code>x := 10  // 第一次：宣告並賦值
+x = 20   // 之後改值：用 =
+// x := 20  // 在同一作用域再對同名用 :=，通常會出錯（除非至少有一個是新變數）</code></pre>
+<h3>3.5 自測</h3>
+<ol><li>1. <code>:=</code> 能寫在 <code>func</code> 外面嗎？  </li><li>2. <code>var x int</code> 不賦值，印出來是什麼？  </li><li>3. <code>C := 0.2</code> 通常會推成什麼浮點型別？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. 不能</li><li>2. <code>0</code></li><li>3. 多半是 <code>float64</code>（字面量預設）</li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-4" data-num="4"><div class="chapter-inner"><h2>4. 區塊式 var 與多重宣告</h2>
+<p>對應：<code>B.go</code></p>
+<h3>4.1 區塊寫法</h3>
+<pre class="code" data-lang="go"><code>var (
+	A int
+	B string = &quot;as&quot;
+	C, d     = 1, 2
+)
+fmt.Println(A, B, C, d)
+// A 是 0（零值），B 是 &quot;as&quot;，C 是 1，d 是 2</code></pre>
+<p>意義：</p>
+<ol><li>1. <code>var ( ... )</code> 只是一次寫多個變數，語意與分開寫多個 <code>var</code> 相同，但較整齊。  </li><li>2. <code>C, d = 1, 2</code>：左邊幾個名字，右邊就要幾個值，數量必須對齊。  </li><li>3. 沒給值的 <code>A</code> 會是該型別零值。</li></ol>
+<h3>4.2 命名大小寫在這個階段的意義</h3>
+<p>在 <code>package main</code> 的練習檔裡，<code>A</code> 或 <code>a</code> 對「能不能跑」通常沒差。   但若之後拆成多個套件：</p>
+<ul><li>- <strong>大寫開頭</strong> = 可被其他套件使用（匯出）  </li><li>- <strong>小寫開頭</strong> = 只在本套件內可用</li></ul>
+<p>現在先建立這個意識即可。</p>
+<h3>4.3 自測</h3>
+<ol><li>1. <code>var ( A int )</code> 裡的 <code>A</code> 初始值是？  </li><li>2. <code>C, d = 1, 2</code> 若只寫一個右邊的值會怎樣？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. <code>0</code></li><li>2. 編譯錯誤（左右數量不一致）</li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-5" data-num="5"><div class="chapter-inner"><h2>5. 常數 const</h2>
+<p>對應：<code>C.go</code>（原版曾故意寫錯）</p>
+<h3>5.1 正確寫法</h3>
+<pre class="code" data-lang="go"><code>const (
+	A int     = 1
+	B         = 3.14
+	C         = &quot;Hi!&quot;
+	MaxRetry  = 26
+)</code></pre>
+<h3>5.2 硬規則</h3>
+<div class="table-wrap"><table><thead><tr><th>規則</th><th>說明</th></tr></thead><tbody><tr><td>編譯期就要確定</td><td><code>const x = 1 + 2</code> ✅；依執行期才知道的值 ❌</td></tr><tr><td>同一區塊不能重名</td><td>兩個 <code>B</code> 會編譯失敗</td></tr><tr><td>不能之後再改</td><td><code>A = 2</code> ❌</td></tr><tr><td>可單行也可區塊</td><td><code>const Pi = 3.14</code> 或 <code>const ( ... )</code></td></tr></tbody></table></div>
+<h3>5.3 你曾經踩過的錯</h3>
+<pre class="code" data-lang="go"><code>const (
+	B = 3.14
+	B = 26 // ❌ 同名重複
+)</code></pre>
+<p>正確做法：第二個改名，例如 <code>MaxRetry = 26</code>。   「知道為什麼錯」本身就是學習的一部分。</p>
+<h3>5.4 自測</h3>
+<ol><li>1. <code>const</code> 可以在執行時用 <code>os.ReadFile</code> 的結果當值嗎？  </li><li>2. 常數定義後能用 <code>=</code> 改掉嗎？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. 不能（不是編譯期常數）</li><li>2. 不能</li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-6" data-num="6"><div class="chapter-inner"><h2>6. fmt 輸出與格式動詞</h2>
+<p>對應：<code>D.go</code></p>
+<h3>6.1 三種輸出函式</h3>
+<pre class="code" data-lang="go"><code>var i, j string = &quot;Hello&quot;, &quot;World&quot;
+
+fmt.Println(i, j)        // 參數間自動空格，結尾自動換行 → Hello World
+fmt.Print(i, j, &quot;\n&quot;)    // 不自動空格、不自動換行；換行要自己加
+fmt.Printf(&quot;i has value: %v and type: %T\n&quot;, i, i)</code></pre>
+<div class="table-wrap"><table><thead><tr><th>函式</th><th>自動空格</th><th>自動換行</th><th>格式字串</th></tr></thead><tbody><tr><td><code>Println</code></td><td>✅</td><td>✅</td><td>無</td></tr><tr><td><code>Print</code></td><td>❌</td><td>❌</td><td>無</td></tr><tr><td><code>Printf</code></td><td>依你寫的格式</td><td>通常自己加 <code>\n</code></td><td>✅</td></tr></tbody></table></div>
+<h3>6.2 常用格式動詞</h3>
+<div class="table-wrap"><table><thead><tr><th>動詞</th><th>意思</th><th>對 <code>i = &amp;quot;Hello&amp;quot;</code></th></tr></thead><tbody><tr><td><code>%v</code></td><td>預設值的樣子</td><td><code>Hello</code></td></tr><tr><td><code>%T</code></td><td>型別</td><td><code>string</code></td></tr><tr><td><code>%#v</code></td><td>接近 Go 語法的值</td><td><code>&amp;quot;Hello&amp;quot;</code></td></tr><tr><td><code>%%</code></td><td>印出一個 <code>%</code> 字元</td><td><code>%</code></td></tr></tbody></table></div>
+<h3>6.3 你踩過的語法坑</h3>
+<pre class="code" data-lang="go"><code>fmt.Print(i,j&quot;,\n&quot;)   // ❌ 字串沒接好
+fmt.Print(i, j, &quot;\n&quot;) // ✅ 每個參數用逗號分開</code></pre>
+<h3>6.4 自測</h3>
+<ol><li>1. <code>Println</code> 與 <code>Print</code> 差在哪兩件事？  </li><li>2. 想看變數型別，用哪個動詞？  </li><li>3. 想印出百分號本身，怎麼寫？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. 自動空格、自動換行</li><li>2. <code>%T</code></li><li>3. <code>%%</code></li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-7" data-num="7"><div class="chapter-inner"><h2>7. 基本型別</h2>
+<p>對應：<code>E.go</code></p>
+<h3>7.1 四個最常用的基礎型別</h3>
+<pre class="code" data-lang="go"><code>var a bool    = true   // 布林
+var b int     = 5      // 整數
+var c float32 = 3.14   // 32 位浮點
+var d string  = &quot;Hi!&quot;  // 字串</code></pre>
+<h3>7.2 宣告時「寫不寫型別」</h3>
+<pre class="code" data-lang="go"><code>var b int = 5 // 明確
+var b = 5     // 推成 int
+b := 5        // 函式內短宣告，推成 int</code></pre>
+<h3>7.3 零值再強調一次</h3>
+<p>沒給初始值時：</p>
+<ul><li>- <code>bool</code> → <code>false</code></li><li>- 數字 → <code>0</code></li><li>- <code>string</code> → <code>&amp;quot;&amp;quot;</code></li></ul>
+<p>這會直接影響你之後看 <code>make([]int, 5)</code> 為什麼一開始全是 <code>0</code>。</p>
+<h3>7.4 自測</h3>
+<ol><li>1. <code>string</code> 的零值是 <code>nil</code> 還是 <code>&amp;quot;&amp;quot;</code>？  </li><li>2. <code>float32</code> 與用 <code>:= 3.14</code> 推出來的型別，一定相同嗎？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. <code>&amp;quot;&amp;quot;</code></li><li>2. 不一定；<code>:= 3.14</code> 常推成 <code>float64</code></li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-8" data-num="8"><div class="chapter-inner"><h2>8. bool 的四種宣告</h2>
+<p>對應：<code>F.go</code></p>
+<pre class="code" data-lang="go"><code>var b1 bool = true // 有型別 + 有值
+var b2 = true      // 推斷型別 + 有值
+var b3 bool        // 有型別、沒值 → 零值 false
+b4 := true         // 短宣告（函式內）</code></pre>
+<p><strong>只記一句：</strong> 沒給值的 <code>bool</code>，一定是 <code>false</code>，不是空、也不是 <code>0</code>。</p>
+<h3>自測</h3>
+<ol><li>1. <code>var b bool</code> 印出來是什麼？  </li><li>2. 上面四種裡，哪一種只能寫在函式內？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. <code>false</code></li><li>2. <code>b4 := true</code></li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-9" data-num="9"><div class="chapter-inner"><h2>9. uint 與型別格式</h2>
+<p>對應：<code>G.go</code></p>
+<pre class="code" data-lang="go"><code>var x uint = 500
+var y uint = 4500
+fmt.Printf(&quot;Type: %T, value: %v\n&quot;, x, x)
+fmt.Printf(&quot;Type: %T, value: %v\n&quot;, y, y)</code></pre>
+<div class="table-wrap"><table><thead><tr><th>型別</th><th>意思</th></tr></thead><tbody><tr><td><code>int</code></td><td>可正可負</td></tr><tr><td><code>uint</code></td><td>無符號，只能 ≥ 0</td></tr></tbody></table></div>
+<p>常用配對：</p>
+<ul><li>- <code>%T</code> → 印型別  </li><li>- <code>%v</code> → 印值  </li></ul>
+<h3>自測</h3>
+<ol><li>1. <code>uint</code> 能存 <code>-1</code> 嗎？  </li><li>2. <code>%T</code> 印的是值還是型別？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. 不能（會編譯錯或超出語意）</li><li>2. 型別</li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-10" data-num="10"><div class="chapter-inner"><h2>10. 陣列 Array（基礎）</h2>
+<p>對應：<code>H.go</code>、<code>i.go</code> 前半</p>
+<h3>10.1 宣告的兩種常見寫法</h3>
+<pre class="code" data-lang="go"><code>var arr1 = [...]int{1, 2, 3} // 長度由元素個數決定 → [3]int
+arr2 := [5]int{4, 5, 6, 7, 8} // 固定長度 5</code></pre>
+<h3>10.2 字串陣列、索引讀寫</h3>
+<pre class="code" data-lang="go"><code>cars := [4]string{&quot;Volvo&quot;, &quot;BMW&quot;, &quot;Ford&quot;, &quot;Mazda&quot;}
+
+prices := [3]int{10, 20, 30}
+fmt.Println(prices[0]) // 10
+fmt.Println(prices[2]) // 30
+
+prices[2] = 50
+fmt.Println(prices) // [10 20 50]</code></pre>
+<h3>10.3 硬規則</h3>
+<ol><li>1. <strong>陣列長度是型別的一部分</strong>  </li></ol>
+<p>   <code>[3]int</code> 與 <code>[5]int</code> 是不同型別，不能直接互塞。</p>
+<ol><li>2. <strong>index 從 0 開始</strong>  </li></ol>
+<p>   長度 3 的最後一個 index 是 <code>2</code>。</p>
+<ol><li>3. <strong>沒填的位置是零值</strong>  </li></ol>
+<p>   <code>int</code> 補 <code>0</code>，<code>string</code> 補 <code>&amp;quot;&amp;quot;</code>。</p>
+<h3>10.4 自測</h3>
+<ol><li>1. <code>[3]int</code> 最後一個 index 是？  </li><li>2. <code>prices[2] = 50</code> 改的是第幾個元素（人類序數）？  </li><li>3. <code>[3]int</code> 和 <code>[5]int</code> 是不是同一型別？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. <code>2</code></li><li>2. 第 3 個</li><li>3. 不是</li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-11" data-num="11"><div class="chapter-inner"><h2>11. 陣列初始化細節與 len</h2>
+<p>對應：<code>i.go</code> 後半</p>
+<h3>11.1 三種初始化程度</h3>
+<pre class="code" data-lang="go"><code>arr1 := [5]int{}              // 全空 → 全零值
+arr2 := [5]int{1, 2}          // 只填前面 → 後面補 0
+arr3 := [5]int{1, 2, 3, 4, 5} // 填滿</code></pre>
+<p>輸出概念：</p>
+<pre class="code" data-lang="text"><code>[0 0 0 0 0]
+[1 2 0 0 0]
+[1 2 3 4 5]</code></pre>
+<h3>11.2 指定索引初始化</h3>
+<pre class="code" data-lang="go"><code>arr1 := [5]int{1: 10, 2: 40}
+// index:  0  1   2  3  4
+// 結果:  [0 10  40  0  0]</code></pre>
+<p>可以跳著填，例如：</p>
+<pre class="code" data-lang="go"><code>[5]int{0: 7, 4: 99} // [7 0 0 0 99]</code></pre>
+<h3>11.3 <code>len()</code></h3>
+<pre class="code" data-lang="go"><code>arr1 := [4]string{&quot;Volvo&quot;, &quot;BMW&quot;, &quot;Ford&quot;, &quot;Mazda&quot;}
+arr2 := [...]int{1, 2, 3, 4, 5, 6}
+
+fmt.Println(len(arr1)) // 4
+fmt.Println(len(arr2)) // 6</code></pre>
+<p>重要：</p>
+<ul><li>- <code>[4]string{...}</code> → 長度你寫死  </li><li>- <code>[...]int{1,2,3}</code> → 編譯器用元素個數推斷  </li><li>- <code>len</code> 是「陣列長度」，不是「有幾個非零元素」  </li></ul>
+<p>  所以 <code>[5]int{1, 2}</code> 的 <code>len</code> 仍是 <strong>5</strong></p>
+<h3>11.4 陣列能力總表</h3>
+<div class="table-wrap"><table><thead><tr><th>能力</th><th>寫法</th></tr></thead><tbody><tr><td>固定長度</td><td><code>[3]int{10, 20, 30}</code></td></tr><tr><td>長度自動</td><td><code>[...]int{1, 2, 3}</code></td></tr><tr><td>讀元素</td><td><code>a[0]</code></td></tr><tr><td>改元素</td><td><code>a[2] = 50</code></td></tr><tr><td>部分初始化</td><td><code>[5]int{1, 2}</code></td></tr><tr><td>指定位置</td><td><code>[5]int{1: 10, 4: 9}</code></td></tr><tr><td>問長度</td><td><code>len(a)</code></td></tr></tbody></table></div>
+<h3>11.5 自測</h3>
+<ol><li>1. <code>[5]int{1, 2}</code> 印出來是？  </li><li>2. <code>[5]int{1: 10, 2: 40}</code> 的 <code>a[0]</code> 是？  </li><li>3. <code>[5]int{1, 2}</code> 的 <code>len</code> 是 2 還是 5？  </li><li>4. <code>[...]string{&amp;quot;a&amp;quot;, &amp;quot;b&amp;quot;}</code> 長度是？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. <code>[1 2 0 0 0]</code></li><li>2. <code>0</code></li><li>3. <code>5</code></li><li>4. <code>2</code></li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-12" data-num="12"><div class="chapter-inner"><h2>12. Slice 基礎（J.go）</h2>
+<blockquote>這章開始是後來新增檔案的內容。  <br/>陣列是固定長度；slice 是 Go 日常更常用的動態序列視圖。</blockquote>
+<h3>12.1 Array vs Slice</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th>Array 陣列</th><th>Slice 切片</th></tr></thead><tbody><tr><td>宣告</td><td><code>[3]int{1,2,3}</code></td><td><code>[]int{1,2,3}</code>（中括號裡<strong>沒有數字</strong>）</td></tr><tr><td>長度</td><td>固定，而且是型別的一部分</td><td>可變</td></tr><tr><td>實務使用頻率</td><td>較少</td><td>很高</td></tr></tbody></table></div>
+<pre class="code" data-lang="go"><code>a := []int{2, 3} // 這是 slice，不是 array</code></pre>
+<h3>12.2 <code>len</code> 與 <code>cap</code></h3>
+<pre class="code" data-lang="go"><code>a := []int{2, 3}
+fmt.Println(len(a)) // 長度：現在有幾個元素
+fmt.Println(cap(a)) // 容量：底層陣列目前最多能撐到哪</code></pre>
+<div class="table-wrap"><table><thead><tr><th>函數</th><th>意思</th></tr></thead><tbody><tr><td><code>len(s)</code></td><td>你現在看得到、用得到的元素個數</td></tr><tr><td><code>cap(s)</code></td><td>底層空間大小；在換新底層之前，<code>len</code> 最多可以長到這裡</td></tr></tbody></table></div>
+<p>比喻：</p>
+<ul><li>- <code>len</code> = 杯子裡現在有多少水  </li><li>- <code>cap</code> = 杯子總共能裝多少  </li></ul>
+<h3>12.3 從陣列切出 slice：<code>s[low:high]</code></h3>
+<pre class="code" data-lang="go"><code>var b = [5]int{1: 2} // [0, 2, 0, 0, 0]
+c := b[1:4]          // 取 index 1,2,3（不含 4）</code></pre>
+<p>規則：<strong>含 low，不含 high</strong>。</p>
+<pre class="code" data-lang="text"><code>index:  0   1   2   3   4
+值:     0   2   0   0   0
+            ^-------^
+            [1:4]</code></pre>
+<p>對這個例子：</p>
+<ul><li>- <code>len(c)</code> = 3  </li><li>- <code>cap(c)</code> = 4（從切開點一路算到底層尾端）</li></ul>
+<p>重點：這樣切出來的 slice，通常與原陣列<strong>共用底層</strong>。   改 <code>c[0]</code>，常常等於改到原陣列對應位置。</p>
+<h3>12.4 用 <code>make</code> 建立 slice</h3>
+<pre class="code" data-lang="go"><code>myslice1 := make([]int, 5, 10) // 型別, 長度, 容量
+// [0 0 0 0 0], len=5, cap=10
+
+myslice2 := make([]int, 5) // 省略容量時，cap = len
+// [0 0 0 0 0], len=5, cap=5</code></pre>
+<div class="table-wrap"><table><thead><tr><th>寫法</th><th>len</th><th>cap</th></tr></thead><tbody><tr><td><code>make([]int, 5, 10)</code></td><td>5</td><td>10</td></tr><tr><td><code>make([]int, 5)</code></td><td>5</td><td>5</td></tr><tr><td><code>[]int{2, 3}</code></td><td>2</td><td>（通常）2</td></tr></tbody></table></div>
+<p>元素一開始是零值；對 <code>int</code> 就是 <code>0</code>。</p>
+<h3>12.5 三種建立 slice 的方式（你都練過）</h3>
+<ol><li>1. 字面量：<code>[]int{2, 3}</code>  </li><li>2. 從陣列切：<code>arr[low:high]</code>  </li><li>3. <code>make([]T, len, cap)</code></li></ol>
+<h3>12.6 自測</h3>
+<ol><li>1. <code>[3]int</code> 和 <code>[]int</code> 哪個是 slice？  </li><li>2. <code>s[1:4]</code> 含不含 index <code>4</code>？  </li><li>3. <code>make([]int, 5, 10)</code> 的 len / cap？  </li><li>4. 從陣列切出的 slice，改元素會不會影響原陣列？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. <code>[]int</code></li><li>2. 不含</li><li>3. 5 / 10</li><li>4. 通常會（共用底層）</li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-13" data-num="13"><div class="chapter-inner"><h2>13. append / 再切片 / copy（K.go）</h2>
+<h3>13.1 <code>append</code>：往後面加元素</h3>
+<pre class="code" data-lang="go"><code>myslice1 := []int{1, 2, 3, 4, 5, 6}
+myslice1 = append(myslice1, 20, 21)
+// [1 2 3 4 5 6 20 21]</code></pre>
+<p>硬規則：</p>
+<pre class="code" data-lang="go"><code>s = append(s, 值...)</code></pre>
+<p><code>append</code> 的結果一定要接住（賦值回去，或接到新變數）。   只呼叫 <code>append(s, 20)</code> 卻不賦值，等於白做。</p>
+<h3>13.2 合併兩個 slice：要用 <code>...</code></h3>
+<pre class="code" data-lang="go"><code>myslice2 := []int{7, 8}
+myslice3 := append(myslice1, myslice2...)</code></pre>
+<div class="table-wrap"><table><thead><tr><th>寫法</th><th>意思</th></tr></thead><tbody><tr><td><code>append(a, 20, 21)</code></td><td>加個別元素</td></tr><tr><td><code>append(a, b...)</code></td><td>把另一個 slice「拆開」接上去</td></tr><tr><td><code>append(a, b)</code></td><td>通常 ❌（型別不對）</td></tr></tbody></table></div>
+<p><code>:=</code> 與 <code>=</code>：</p>
+<ul><li>- <code>myslice3 := append(...)</code> → 新變數  </li><li>- <code>myslice1 = append(...)</code> → 覆蓋原變數</li></ul>
+<h3>13.3 從陣列切片，再切片改長度</h3>
+<pre class="code" data-lang="go"><code>arr1 := [6]int{9, 10, 11, 12, 13, 14}
+myslice1 := arr1[1:5] // [10 11 12 13]
+// len=4；cap 則從切開點算到底層尾端
+
+myslice1 = arr1[1:3]  // [10 11]，把「窗戶」切短
+myslice1 = append(myslice1, 20, 21, 22, 23) // 再變長</code></pre>
+<p>心智模型：</p>
+<ul><li>- 切片像一扇窗戶，看著底層陣列某一段  </li><li>- <code>len</code> = 窗戶現在開多大  </li><li>- <code>cap</code> = 不換新底層時，窗戶最多還能往右開到哪  </li><li>- 若 <code>append</code> 後超過 <code>cap</code>，Go 會配置新的底層陣列</li></ul>
+<h3>13.4 <code>copy</code>：獨立副本</h3>
+<pre class="code" data-lang="go"><code>numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+neededNumbers := numbers[:len(numbers)-10] // 前 5 個
+numbersCopy := make([]int, len(neededNumbers))
+copy(numbersCopy, neededNumbers)</code></pre>
+<div class="table-wrap"><table><thead><tr><th>方式</th><th>改副本會不會動到原本？</th></tr></thead><tbody><tr><td><code>s2 := s1[1:3]</code>（切片）</td><td>常常會（共用底層）</td></tr><tr><td><code>copy(dst, src)</code></td><td>不會（值被拷貝走了）</td></tr></tbody></table></div>
+<p><code>copy</code> 要注意：</p>
+<ol><li>1. 目標 <code>dst</code> 要先有足夠長度（常用 <code>make</code>）  </li><li>2. 實際拷貝個數 = <code>min(len(dst), len(src))</code>  </li><li>3. <code>copy</code> 不負責把 slice「加長」；要加長仍用 <code>append</code></li></ol>
+<h3>13.5 一張圖串起來</h3>
+<pre class="code" data-lang="text"><code>建立 []int{...} / make / arr[a:b]
+        │
+        ▼
+   看 len / cap
+        │
+        ├─ append(s, x)      → 加長（可能換底層）
+        ├─ append(a, b...)   → 合併
+        ├─ s[a:b]            → 再切片（常共用底層）
+        └─ copy(dst, src)    → 獨立複製</code></pre>
+<h3>13.6 自測</h3>
+<ol><li>1. <code>append</code> 之後一定要怎樣，結果才留得住？  </li><li>2. 合併 slice 為什麼要寫 <code>b...</code>？  </li><li>3. <code>s2 := s1[1:3]</code> 和 <code>copy</code> 最大差別？  </li><li>4. 長度 15 的 slice 做 <code>s[:len(s)-10]</code>，會得到幾個元素？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. 賦值回去（或賦給新變數）</li><li>2. 把元素拆開才能接上</li><li>3. 是否共用底層</li><li>4. 5 個</li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-14" data-num="14"><div class="chapter-inner"><h2>14. 運算與 if / else（L.go）</h2>
+<h3>14.1 先會改值：<code>+=</code></h3>
+<pre class="code" data-lang="go"><code>var x = 10
+x = x + 5 // 等同 x += 5
+fmt.Println(x) // 15</code></pre>
+<p>常見還有：<code>-=</code> <code>*=</code> <code>/=</code></p>
+<h3>14.2 單純 <code>if</code></h3>
+<pre class="code" data-lang="go"><code>x := 20
+y := 18
+if x &gt; y {
+	fmt.Println(&quot;x is greater than y&quot;)
+}</code></pre>
+<p>規則：</p>
+<ol><li>1. 條件不必加括號：<code>if x &amp;gt; y</code> 即可  </li><li>2. <code>{</code> 一定要有，即使只有一行  </li><li>3. 條件為 <code>true</code> 才進入大括號  </li></ol>
+<p>常見比較運算：<code>&amp;gt;</code> <code>&amp;lt;</code> <code>&amp;gt;=</code> <code>&amp;lt;=</code> <code>==</code> <code>!=</code></p>
+<h3>14.3 <code>if</code> / <code>else</code>（最容易踩坑）</h3>
+<pre class="code" data-lang="go"><code>temperature := 14
+if temperature &gt; 15 {
+	fmt.Println(&quot;It is warm out there&quot;)
+} else {
+	fmt.Println(&quot;It is cold out there&quot;)
+}</code></pre>
+<p><strong>Go 硬規則：<code>else</code> 必須緊接在上一行 <code>}</code> 後面，不能單獨換行。</strong></p>
+<pre class="code" data-lang="go"><code>// ✅ 正確
+if ok {
+	...
+} else {
+	...
+}
+
+// ❌ 編譯失敗
+if ok {
+	...
+}
+else {
+	...
+}</code></pre>
+<p>原因：Go 會在換行的 <code>}</code> 後自動插入分號，導致 <code>else</code> 語法被拆壞。</p>
+<h3>14.4 <code>else if</code> 多分支</h3>
+<pre class="code" data-lang="go"><code>time := 22
+if time &lt; 10 {
+	fmt.Println(&quot;Good morning.&quot;)
+} else if time &lt; 20 {
+	fmt.Println(&quot;Good day.&quot;)
+} else {
+	fmt.Println(&quot;Good evening.&quot;)
+}</code></pre>
+<p>執行順序：</p>
+<ol><li>1. 先看第一個 <code>if</code>  </li><li>2. 不行再看 <code>else if</code>  </li><li>3. 都不行才走最後 <code>else</code>  </li><li>4. <strong>最多只會進其中一個分支</strong></li></ol>
+<h3>14.5 巢狀 <code>if</code></h3>
+<pre class="code" data-lang="go"><code>num := 20
+if num &gt;= 10 {
+	fmt.Println(&quot;Num is more than 10.&quot;)
+	if num &gt; 15 {
+		fmt.Println(&quot;Num is also more than 15.&quot;)
+	}
+} else {
+	fmt.Println(&quot;Num is less than 10.&quot;)
+}</code></pre>
+<p>若外層條件為 <code>false</code>，內層整段都不會執行。</p>
+<h3>14.6 自測</h3>
+<ol><li>1. <code>else</code> 能不能寫成下一行單獨一個 <code>else</code>？  </li><li>2. <code>else if</code> 鏈最多會執行幾個分支？  </li><li>3. 外層 <code>if</code> 為 false 時，內層會跑嗎？  </li><li>4. <code>x = x + 5</code> 的短寫？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. 不能</li><li>2. 最多一個</li><li>3. 不會</li><li>4. <code>x += 5</code></li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-15" data-num="15"><div class="chapter-inner"><h2>15. switch（M.go）</h2>
+<h3>15.1 基本寫法</h3>
+<pre class="code" data-lang="go"><code>day := 8
+
+switch day {
+case 1:
+	fmt.Println(&quot;Monday&quot;)
+case 2:
+	fmt.Println(&quot;Tuesday&quot;)
+case 3:
+	fmt.Println(&quot;Wednesday&quot;)
+case 4:
+	fmt.Println(&quot;Thursday&quot;)
+case 5:
+	fmt.Println(&quot;Friday&quot;)
+case 6:
+	fmt.Println(&quot;Saturday&quot;)
+case 7:
+	fmt.Println(&quot;Sunday&quot;)
+default:
+	fmt.Println(&quot;Not a weekday&quot;)
+}</code></pre>
+<p><code>day = 8</code> 時沒有對應 case，會走 <code>default</code>。</p>
+<h3>15.2 和 <code>if</code> 的關係</h3>
+<p>當你在對「同一個變數等於很多固定值」做分支時，<code>switch</code> 通常比一長串 <code>else if</code> 更清楚。</p>
+<h3>15.3 Go 的 switch 三個關鍵</h3>
+<ol><li>1. <strong>自動 break</strong>  </li></ol>
+<p>   進了某個 <code>case</code>，跑完就結束，不會掉進下一個 <code>case</code>。      這點和 C 不同。</p>
+<ol><li>2. <strong><code>default</code> 可有可無</strong>  </li></ol>
+<p>   沒有任何 case 命中時才會進 <code>default</code>。</p>
+<ol><li>3. <strong><code>case</code> 後面直接寫程式即可</strong>  </li></ol>
+<p>   不必再為每個 case 額外包一層 <code>{}</code>（整個 switch 已有大括號）。</p>
+<h3>15.4 一個 case、多個值</h3>
+<pre class="code" data-lang="go"><code>day := 5
+
+switch day {
+case 1, 3, 5:
+	fmt.Println(&quot;Odd weekday&quot;)
+case 2, 4:
+	fmt.Println(&quot;Even weekday&quot;)
+case 6, 7:
+	fmt.Println(&quot;Weekend&quot;)
+default:
+	fmt.Println(&quot;Invalid day of day number&quot;)
+}</code></pre>
+<p>等同於：</p>
+<pre class="code" data-lang="go"><code>if day == 1 || day == 3 || day == 5 {
+	...
+}</code></pre>
+<h3>15.5 何時用 switch、何時用 if</h3>
+<div class="table-wrap"><table><thead><tr><th>情況</th><th>較適合</th></tr></thead><tbody><tr><td>同一變數比很多固定值</td><td><code>switch</code></td></tr><tr><td>複雜條件、範圍比較、多個變數</td><td><code>if</code> / <code>else if</code></td></tr><tr><td>星期、狀態碼、模式選擇</td><td>常見用 <code>switch</code></td></tr></tbody></table></div>
+<h3>15.6 自測</h3>
+<ol><li>1. Go 的 case 跑完會不會自動掉進下一個 case？  </li><li>2. 什麼時候會進 <code>default</code>？  </li><li>3. <code>case 1, 3, 5:</code> 表示什麼？  </li><li>4. 在多值 case 的例子裡，<code>day := 6</code> 會印什麼？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. 不會</li><li>2. 沒有 case 命中時</li><li>3. 值為 1 或 3 或 5 都算這一支</li><li>4. <code>Weekend</code></li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-16" data-num="16"><div class="chapter-inner"><h2>16. for / continue / range（N.go）</h2>
+<h3>16.1 經典三段式 for</h3>
+<pre class="code" data-lang="go"><code>for i := 0; i &lt;= 100; i += 10 {
+	fmt.Println(i)
+}
+// 0 10 20 ... 100</code></pre>
+<div class="table-wrap"><table><thead><tr><th>段</th><th>角色</th><th>例子</th></tr></thead><tbody><tr><td>1</td><td>初始</td><td><code>i := 0</code></td></tr><tr><td>2</td><td>條件（true 才繼續）</td><td><code>i &amp;lt;= 100</code></td></tr><tr><td>3</td><td>每次迴圈結束後執行</td><td><code>i += 10</code></td></tr></tbody></table></div>
+<p>Go <strong>只有 <code>for</code></strong>，沒有 <code>while</code> 關鍵字。   若要 while 風格：</p>
+<pre class="code" data-lang="go"><code>for i &lt; 5 {
+	...
+}</code></pre>
+<p>若要無限迴圈：</p>
+<pre class="code" data-lang="go"><code>for {
+	...
+	// 通常內部會配 break
+}</code></pre>
+<h3>16.2 <code>continue</code> vs <code>break</code></h3>
+<pre class="code" data-lang="go"><code>for i := 0; i &lt; 5; i++ {
+	if i == 3 {
+		continue
+	}
+	fmt.Println(i)
+}
+// 0 1 2 4（沒有 3）</code></pre>
+<div class="table-wrap"><table><thead><tr><th>關鍵字</th><th>效果</th></tr></thead><tbody><tr><td><code>continue</code></td><td>結束<strong>這一圈</strong>剩餘程式，進入下一圈</td></tr><tr><td><code>break</code></td><td>結束<strong>整個</strong>迴圈</td></tr></tbody></table></div>
+<p>若把上面的 <code>continue</code> 改成 <code>break</code>，則只會印 <code>0 1 2</code>。</p>
+<h3>16.3 巢狀 for</h3>
+<pre class="code" data-lang="go"><code>adj := [2]string{&quot;big&quot;, &quot;tasty&quot;}
+fruits := [3]string{&quot;apple&quot;, &quot;orange&quot;, &quot;banana&quot;}
+
+for i := 0; i &lt; len(adj); i++ {
+	for j := 0; j &lt; len(fruits); j++ {
+		fmt.Println(adj[i], fruits[j])
+	}
+}</code></pre>
+<p>外圈每 1 次，內圈完整跑 3 次，總共 <code>2 × 3 = 6</code> 行：</p>
+<pre class="code" data-lang="text"><code>big apple
+big orange
+big banana
+tasty apple
+tasty orange
+tasty banana</code></pre>
+<p>用 <code>len(...)</code> 當上限，陣列變長時比較不容易寫死錯誤數字。</p>
+<h3>16.4 <code>range</code> 遍歷</h3>
+<pre class="code" data-lang="go"><code>fruits := [3]string{&quot;apple&quot;, &quot;orange&quot;, &quot;banana&quot;}
+
+for idx, val := range fruits {
+	fmt.Printf(&quot;%v\t%v\n&quot;, idx, val)
+}</code></pre>
+<div class="table-wrap"><table><thead><tr><th>寫法</th><th>意思</th></tr></thead><tbody><tr><td><code>for i, v := range s</code></td><td>要索引 + 值</td></tr><tr><td><code>for _, v := range s</code></td><td>只要值</td></tr><tr><td><code>for i := range s</code></td><td>只要索引</td></tr></tbody></table></div>
+<p><code>range</code> 可用於 array、slice、string、map 等。   之後處理 slice 時，這會是最常見寫法之一。</p>
+<h3>16.5 四種 for 心智圖</h3>
+<pre class="code" data-lang="text"><code>for i := 0; i &lt; n; i++   → 計數型
+for 條件 { }             → while 型
+for { }                  → 無限迴圈（常配 break）
+for i, v := range 容器    → 遍歷型（最常見）</code></pre>
+<h3>16.6 自測</h3>
+<ol><li>1. Go 有沒有 <code>while</code> 關鍵字？  </li><li>2. <code>continue</code> 和 <code>break</code> 差在哪？  </li><li>3. 外圈 2、內圈 3，共印幾行？  </li><li>4. 只要值不要 index，<code>range</code> 怎麼寫？</li></ol>
+<details class="quiz-answer"><summary>答案</summary><div class="answer-body"><ol class="answer-list"><li>1. 沒有（用 <code>for</code> 模擬）</li><li>2. 跳過本圈 vs 結束整個迴圈</li><li>3. 6</li><li>4. <code>for _, v := range s</code></li></ol></div></details>
+<hr class="sep"/></div></section><section class="chapter" id="section-17" data-num="17"><div class="chapter-inner"><h2>17. 總複習對照表</h2>
+<h3>17.1 語法工具箱</h3>
+<div class="table-wrap"><table><thead><tr><th>主題</th><th>你要能立刻想起</th></tr></thead><tbody><tr><td>程式入口</td><td><code>package main</code> + <code>func main()</code></td></tr><tr><td>變數</td><td><code>var</code> / <code>:=</code> / 零值</td></tr><tr><td>常數</td><td><code>const</code>、不能重名、不能改</td></tr><tr><td>輸出</td><td><code>Print</code> / <code>Println</code> / <code>Printf</code> + <code>%v %T %#v</code></td></tr><tr><td>陣列</td><td>長度固定、<code>[n]T</code>、index 從 0</td></tr><tr><td>Slice</td><td><code>[]T</code>、<code>len</code>/<code>cap</code>、<code>make</code>、切片語法</td></tr><tr><td>成長與複製</td><td><code>append</code>、<code>b...</code>、<code>copy</code></td></tr><tr><td>條件</td><td><code>if</code> / <code>else if</code> / <code>else</code>（else 不可換行）</td></tr><tr><td>多值分支</td><td><code>switch</code> / <code>case a, b</code> / <code>default</code></td></tr><tr><td>迴圈</td><td>三段式 <code>for</code>、<code>continue</code>、<code>break</code>、<code>range</code></td></tr></tbody></table></div>
+<h3>17.2 最容易混淆的幾組概念</h3>
+<ol><li>1. <strong><code>[3]int</code> vs <code>[]int</code></strong>  </li></ol>
+<p>   前者陣列，後者 slice。</p>
+<ol><li>2. <strong><code>len</code> vs <code>cap</code></strong>  </li></ol>
+<p>   現在有幾個 vs 底層還能撐多大。</p>
+<ol><li>3. <strong>切片 vs <code>copy</code></strong>  </li></ol>
+<p>   切片常共用底層；<code>copy</code> 是獨立副本。</p>
+<ol><li>4. <strong><code>continue</code> vs <code>break</code></strong>  </li></ol>
+<p>   跳過本圈 vs 離開迴圈。</p>
+<ol><li>5. <strong><code>if</code> vs <code>switch</code></strong>  </li></ol>
+<p>   複雜條件用 <code>if</code>；多個固定值比對用 <code>switch</code>。</p>
+<h3>17.3 建議的下一步（尚未寫進正式教學正文）</h3>
+<p>這些是「接下來可以學」，但<strong>還不是本手冊已教完的內容</strong>：</p>
+<ol><li>1. 函式的回傳值、多回傳值  </li><li>2. <code>map</code>  </li><li>3. <code>struct</code>  </li><li>4. 把 slice + <code>for range</code> 做成小專案（例如總和、最大值）</li></ol>
+<p>等我們正式教完，會把對應章節補進來。</p>
+<hr class="sep"/></div></section><section class="chapter" id="section-18" data-num="18"><div class="chapter-inner"><h2>18. 修訂紀錄</h2>
+<div class="table-wrap"><table><thead><tr><th>日期</th><th>變更</th></tr></thead><tbody><tr><td>2026-09-06</td><td>初版建立。涵蓋從第一次複習教學到 <code>J.go</code>～<code>N.go</code> 的全部已教內容。</td></tr></tbody></table></div>
+<hr class="sep"/></div></section><section class="chapter" id="section-更新約定-給未來的我們" data-num=""><div class="chapter-inner"><h2>更新約定（給未來的我們）</h2>
+<p>對，之後每次學習結束，都會更新這份手冊：</p>
+<ol><li>1. <strong>新學的語法</strong> → 新增一章（或在既有章節補小節）  </li><li>2. <strong>你踩過的坑</strong> → 寫進該章的「易錯點」  </li><li>3. <strong>對應練習檔</strong> → 更新「學習地圖與檔案對照」  </li><li>4. <strong>修訂紀錄</strong> → 追加一列日期與變更說明  </li></ol>
+<p>這樣手冊會一直等於「到目前為止，我們真正教過、你真正練過」的完整版本，而不是一份預先寫好、超前很多的大綱。</p></div></section>
+    </div>
+    <div class="footnote-bar">
+      <div>配對檔案：<strong>學習手冊.md</strong>（給 AI）／<strong>學習報告.html</strong>（給人）</div>
+      <div>修訂：2026-09-07 · 視覺報告初版</div>
+    </div>
+  </div>
+</div>
+<script>
+const links = [...document.querySelectorAll('.nav-link')];
+const chapters = [...document.querySelectorAll('.chapter[id^="section-"]')];
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const id = e.target.id;
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  });
+}, { rootMargin: '-30% 0px -55% 0px', threshold: 0.01 });
+chapters.forEach(c => io.observe(c));
+</script>
+</body>
+</html>
