@@ -32,6 +32,8 @@ jobs:
           cp "學習報告.html" "_site/學習報告.html" || true
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
